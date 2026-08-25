@@ -14,8 +14,8 @@ class TechnocoreGUI:
         self.root.configure(padx=10, pady=10)
 
         # Style
-        style = ttk.Style()
-        style.theme_use('clam')
+        import sv_ttk
+        sv_ttk.set_theme("dark")
 
         # Passphrase Frame
         pass_frame = ttk.LabelFrame(root, text="Authentication", padding=10)
