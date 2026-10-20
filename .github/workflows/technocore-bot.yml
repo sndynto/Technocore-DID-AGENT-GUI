@@ -1,0 +1,69 @@
+name: Technocore DID Agent Bot
+
+on:
+  # Jadwal otomatis - setiap hari jam 08:00 UTC (15:00 WIB)
+  schedule:
+    - cron: "0 8 * * *"
+
+  # Bisa juga dijalankan manual dari tab "Actions" di GitHub
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode yang dijalankan"
+        required: true
+        default: "lobby"
+        type: choice
+        options:
+          - lobby
+          - contribute
+          - auto
+
+jobs:
+  run-bot:
+    name: Run Technocore Agent
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # 1. Download kode dari repo Anda
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Python
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # 3. Install dependensi
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Pulihkan identity.pem dari GitHub Secret
+      #    (Secret disimpan dalam format base64)
+      - name: Restore Identity File
+        run: |
+          echo "${{ secrets.IDENTITY_PEM_BASE64 }}" | base64 -d > identity.pem
+          echo "identity.pem restored successfully."
+
+      # 5. Jalankan bot (mode lobby setiap hari)
+      - name: Run Bot - Join Lobby
+        env:
+          TECHNOCORE_PASSPHRASE: ${{ secrets.TECHNOCORE_PASSPHRASE }}
+        run: python bot.py lobby
+
+      # 6. Post kontribusi (hanya saat dijalankan manual dengan mode 'contribute' / 'auto')
+      - name: Run Bot - Post Contribution
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'contribute' || inputs.mode == 'auto') }}
+        env:
+          TECHNOCORE_PASSPHRASE: ${{ secrets.TECHNOCORE_PASSPHRASE }}
+        run: |
+          python bot.py contribute \
+            "https://github.com/sndynto/Technocore-DID-AGENT-GUI" \
+            "Python GUI Client"
+
+      # 7. Hapus identity.pem setelah selesai (keamanan)
+      - name: Cleanup Identity File
+        if: always()
+        run: rm -f identity.pem
