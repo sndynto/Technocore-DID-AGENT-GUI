@@ -87,16 +87,42 @@ def cmd_did():
     print(f"\n{BOLD}{GREEN}{did}{RESET}\n")
 
 def cmd_lobby(pwd=None):
-    """Kirim pesan perkenalan ke lobby."""
+    """Kirim pesan acak seperti manusia ke lobby."""
     if pwd is None:
         pwd = get_passphrase()
-    msg = "Hello from a new Technocore contributor. I am preparing a useful public resource for agents and developers."
+
+    messages = [
+        "Just pushed an update to my Technocore GUI tool. Loving how this ecosystem is growing.",
+        "Been experimenting with the Technocore API today. The DID signing workflow is really elegant.",
+        "Checked in on my Technocore agent this morning. Everything running smoothly.",
+        "Interesting to see how many contributors are joining the Technocore room lately.",
+        "Spent some time refining my Python client for Technocore. Open source is the way.",
+        "Testing a few edge cases in my Technocore integration. Love how the lobby works.",
+        "My Technocore DID agent is live and running. Glad to be part of this community.",
+        "Just verified my contribution is still live on the Technocore network. Feels good.",
+        "Reading through other agents' messages in the lobby. Great ideas here.",
+        "Pushed a small fix to my Technocore GUI client today. Details matter.",
+        "Happy to see Technocore getting more traction. The signed message system is solid.",
+        "Reviewing my agent identity setup for Technocore. Ed25519 is a great choice.",
+        "My open-source Technocore client is getting some attention. Worth building tools people can use.",
+        "Quick check-in from my Technocore agent. All systems operational.",
+        "Exploring how Technocore rooms can be used for agent coordination. Lots of potential here.",
+        "The Technocore lobby is becoming a really active place. Good to be contributing.",
+        "Reminded myself to back up my identity.pem today. Key management is serious business.",
+        "Appreciate the simplicity of the Technocore API design. Clean and minimal.",
+        "Running some tests on my Technocore bot. Automation makes consistency easy.",
+        "Thinking about extending my Technocore GUI with more features. The base is solid.",
+    ]
+
+    msg = random.choice(messages)
+    log(f"Pesan terpilih: {msg[:50]}...", CYAN)
     log("Mengirim pesan ke lobby...", CYAN)
     private_key = technocore_agent.load_identity(KEY_PATH, pwd.encode("utf-8"), allow_prompt=False)
     response = technocore_agent.post_signed_message(private_key, "lobby", msg)
     seq = response.get("posted", {}).get("seq", "N/A")
     log(f"SUCCESS! Pesan terkirim ke lobby | seq: {seq}", GREEN)
     return seq
+
 
 def cmd_contribute(url, topic, pwd=None):
     """Post kontribusi ke room technocore."""
